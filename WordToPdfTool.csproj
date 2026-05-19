@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <!-- <ApplicationIcon>app.ico</ApplicationIcon> -->
+  </PropertyGroup>
+
+  <!--
+    為了跨電腦相容（老師電腦只要有安裝 Office 即可），
+    這裡改採「COM 晚期繫結（late binding）」策略，不依賴 PIA 套件。
+    因此不再使用 Microsoft.Office.Interop.Word 的強型別參考。
+  -->
+
+</Project>
