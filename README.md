@@ -1,5 +1,5 @@
 # 📄 word-to-pdf-batch-converter
-（課程計畫 Word 批次轉 PDF 工具）
+#（課程計畫 Word 批次轉 PDF 工具）
 
 這是一款專為學校「課程計畫上網公告」流程設計的 **Word 批次轉 PDF 工具**。
 
