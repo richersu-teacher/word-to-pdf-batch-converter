@@ -1,6 +1,8 @@
 # 📄 word-to-pdf-batch-converter（課程計畫 Word 批次轉 PDF 工具）
 
 這是一款專為學校「課程計畫上網公告」流程設計的 **Word 批次轉 PDF 工具**。
+本工具會呼叫電腦中已安裝的 Microsoft Word 進行 PDF 匯出，
+轉換結果通常接近人工在 Word 中「另存成 PDF」的效果。
 
 適合處理以下情境：
 
