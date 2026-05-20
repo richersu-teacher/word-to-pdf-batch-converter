@@ -57,11 +57,24 @@ public partial class Form1 : Form
             return;
         }
 
-        // 防呆檢查：來源與目的不得相同
-        if (string.Equals(Path.GetFullPath(sourcePath), Path.GetFullPath(targetPath), StringComparison.OrdinalIgnoreCase))
+        // 前置防呆警告：來源/目的相同，或目的資料夾不為空時，需二次確認
+        var isSamePath = string.Equals(Path.GetFullPath(sourcePath), Path.GetFullPath(targetPath), StringComparison.OrdinalIgnoreCase);
+        var targetHasAnyFile = Directory.Exists(targetPath) &&
+            Directory.EnumerateFiles(targetPath, "*", SearchOption.AllDirectories).Any();
+
+        if (isSamePath || targetHasAnyFile)
         {
-            MessageBox.Show(this, "來源與目的資料夾不得相同。", "提醒", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            return;
+            var confirm = MessageBox.Show(
+                this,
+                "目的資料夾與來源資料夾相同，或目的資料夾內已有檔案。繼續執行可能會覆蓋現有檔案，確定要繼續嗎？",
+                "警告",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Warning);
+
+            if (confirm == DialogResult.No)
+            {
+                return;
+            }
         }
 
         try
@@ -140,6 +153,25 @@ public partial class Form1 : Form
         btnStart.Enabled = enabled;
     }
 
+    private void rdoForceOverwrite_CheckedChanged(object sender, EventArgs e)
+    {
+        if (rdoForceOverwrite.Checked)
+        {
+            pnlOverwriteSubOptions.Enabled = true;
+
+            if (!rdoOverwriteUnconditional.Checked && !rdoOverwriteByTime.Checked)
+            {
+                rdoOverwriteUnconditional.Checked = true;
+            }
+
+            return;
+        }
+
+        pnlOverwriteSubOptions.Enabled = false;
+        rdoOverwriteUnconditional.Checked = false;
+        rdoOverwriteByTime.Checked = false;
+    }
+
     /// <summary>
     /// 取得目前 UI 所選擇的衝突處理模式。
     /// </summary>
@@ -147,6 +179,11 @@ public partial class Form1 : Form
     {
         if (rdoForceOverwrite.Checked)
         {
+            if (rdoOverwriteByTime.Checked)
+            {
+                return ConflictMode.ForceOverwriteByModifiedTime;
+            }
+
             return ConflictMode.ForceOverwrite;
         }
 

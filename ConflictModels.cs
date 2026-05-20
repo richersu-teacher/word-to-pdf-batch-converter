@@ -16,6 +16,7 @@ public enum ConflictAction
 public enum ConflictMode
 {
     ForceOverwrite,
+    ForceOverwriteByModifiedTime,
     AutoRename,
     AskEveryTime
 }

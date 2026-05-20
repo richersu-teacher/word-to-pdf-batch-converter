@@ -38,6 +38,10 @@ partial class Form1
         lblSource = new Label();
         lblTarget = new Label();
         grpConflict = new GroupBox();
+        lblOverwriteHint = new Label();
+        pnlOverwriteSubOptions = new Panel();
+        rdoOverwriteByTime = new RadioButton();
+        rdoOverwriteUnconditional = new RadioButton();
         rdoAskEveryTime = new RadioButton();
         rdoAutoRename = new RadioButton();
         rdoForceOverwrite = new RadioButton();
@@ -94,7 +98,7 @@ partial class Form1
         // 
         lblStatus.AutoEllipsis = true;
         lblStatus.BorderStyle = BorderStyle.FixedSingle;
-        lblStatus.Location = new Point(23, 264);
+        lblStatus.Location = new Point(23, 301);
         lblStatus.Name = "lblStatus";
         lblStatus.Size = new Size(725, 29);
         lblStatus.TabIndex = 5;
@@ -103,7 +107,7 @@ partial class Form1
         // 
         // progressBar
         // 
-        progressBar.Location = new Point(23, 310);
+        progressBar.Location = new Point(23, 343);
         progressBar.Name = "progressBar";
         progressBar.Size = new Size(725, 29);
         progressBar.TabIndex = 6;
@@ -111,20 +115,63 @@ partial class Form1
         // 
         // grpConflict
         // 
+        grpConflict.Controls.Add(pnlOverwriteSubOptions);
+        grpConflict.Controls.Add(lblOverwriteHint);
         grpConflict.Controls.Add(rdoAskEveryTime);
         grpConflict.Controls.Add(rdoAutoRename);
         grpConflict.Controls.Add(rdoForceOverwrite);
         grpConflict.Location = new Point(23, 113);
         grpConflict.Name = "grpConflict";
-        grpConflict.Size = new Size(615, 132);
+        grpConflict.Size = new Size(615, 162);
         grpConflict.TabIndex = 9;
         grpConflict.TabStop = false;
         grpConflict.Text = "遇到同名檔案衝突時的處理方式";
         // 
+        // lblOverwriteHint
+        // 
+        lblOverwriteHint.AutoSize = true;
+        lblOverwriteHint.ForeColor = Color.Red;
+        lblOverwriteHint.Location = new Point(115, 62);
+        lblOverwriteHint.Name = "lblOverwriteHint";
+        lblOverwriteHint.Size = new Size(125, 19);
+        lblOverwriteHint.TabIndex = 6;
+        lblOverwriteHint.Text = "(判斷條件2選1)";
+        // 
+        // pnlOverwriteSubOptions
+        // 
+        pnlOverwriteSubOptions.Controls.Add(rdoOverwriteByTime);
+        pnlOverwriteSubOptions.Controls.Add(rdoOverwriteUnconditional);
+        pnlOverwriteSubOptions.BorderStyle = BorderStyle.FixedSingle;
+        pnlOverwriteSubOptions.Enabled = false;
+        pnlOverwriteSubOptions.Location = new Point(36, 83);
+        pnlOverwriteSubOptions.Name = "pnlOverwriteSubOptions";
+        pnlOverwriteSubOptions.Size = new Size(569, 42);
+        pnlOverwriteSubOptions.TabIndex = 5;
+        // 
+        // rdoOverwriteByTime
+        // 
+        rdoOverwriteByTime.AutoSize = true;
+        rdoOverwriteByTime.Location = new Point(212, 10);
+        rdoOverwriteByTime.Name = "rdoOverwriteByTime";
+        rdoOverwriteByTime.Size = new Size(258, 23);
+        rdoOverwriteByTime.TabIndex = 1;
+        rdoOverwriteByTime.Text = "依修改日期覆蓋（時間相同時詢問）";
+        rdoOverwriteByTime.UseVisualStyleBackColor = true;
+        // 
+        // rdoOverwriteUnconditional
+        // 
+        rdoOverwriteUnconditional.AutoSize = true;
+        rdoOverwriteUnconditional.Location = new Point(6, 10);
+        rdoOverwriteUnconditional.Name = "rdoOverwriteUnconditional";
+        rdoOverwriteUnconditional.Size = new Size(194, 23);
+        rdoOverwriteUnconditional.TabIndex = 0;
+        rdoOverwriteUnconditional.Text = "docx優先（覆蓋原PDF）";
+        rdoOverwriteUnconditional.UseVisualStyleBackColor = true;
+        // 
         // rdoAskEveryTime
         // 
         rdoAskEveryTime.AutoSize = true;
-        rdoAskEveryTime.Location = new Point(21, 96);
+        rdoAskEveryTime.Location = new Point(21, 127);
         rdoAskEveryTime.Name = "rdoAskEveryTime";
         rdoAskEveryTime.Size = new Size(88, 23);
         rdoAskEveryTime.TabIndex = 2;
@@ -135,23 +182,23 @@ partial class Form1
         // 
         rdoAutoRename.AutoSize = true;
         rdoAutoRename.Checked = true;
-        rdoAutoRename.Location = new Point(21, 62);
+        rdoAutoRename.Location = new Point(21, 30);
         rdoAutoRename.Name = "rdoAutoRename";
         rdoAutoRename.Size = new Size(168, 23);
         rdoAutoRename.TabIndex = 1;
-        rdoAutoRename.TabStop = true;
         rdoAutoRename.Text = "並存自動加序號（預設）";
         rdoAutoRename.UseVisualStyleBackColor = true;
         // 
         // rdoForceOverwrite
         // 
         rdoForceOverwrite.AutoSize = true;
-        rdoForceOverwrite.Location = new Point(21, 30);
+        rdoForceOverwrite.Location = new Point(21, 60);
         rdoForceOverwrite.Name = "rdoForceOverwrite";
         rdoForceOverwrite.Size = new Size(88, 23);
         rdoForceOverwrite.TabIndex = 0;
-        rdoForceOverwrite.Text = "強制覆蓋";
+        rdoForceOverwrite.Text = "覆蓋";
         rdoForceOverwrite.UseVisualStyleBackColor = true;
+        rdoForceOverwrite.CheckedChanged += rdoForceOverwrite_CheckedChanged;
         // 
         // lblSource
         // 
@@ -175,7 +222,7 @@ partial class Form1
         // 
         AutoScaleDimensions = new SizeF(9F, 19F);
         AutoScaleMode = AutoScaleMode.Font;
-        ClientSize = new Size(774, 357);
+        ClientSize = new Size(774, 400);
         Controls.Add(grpConflict);
         Controls.Add(lblTarget);
         Controls.Add(lblSource);
@@ -209,6 +256,10 @@ partial class Form1
     private Label lblSource;
     private Label lblTarget;
     private GroupBox grpConflict;
+    private Label lblOverwriteHint;
+    private Panel pnlOverwriteSubOptions;
+    private RadioButton rdoOverwriteByTime;
+    private RadioButton rdoOverwriteUnconditional;
     private RadioButton rdoAskEveryTime;
     private RadioButton rdoAutoRename;
     private RadioButton rdoForceOverwrite;

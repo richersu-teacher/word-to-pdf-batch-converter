@@ -136,42 +136,66 @@ public sealed class FileProcessor
                     })
                     .ToArray();
 
-                var nonWordFiles = dirFiles
-                    .Where(f =>
+                if (_conflictMode == ConflictMode.ForceOverwriteByModifiedTime)
+                {
+                    // 路線二：覆蓋-依修改日期。僅處理同主檔名群組中的最新代表檔
+                    var representativeFiles = GetLatestRepresentativeFiles(dirFiles);
+                    foreach (var sourceFile in representativeFiles)
                     {
-                        var ext = Path.GetExtension(f);
-                        return !ext.Equals(".doc", StringComparison.OrdinalIgnoreCase) &&
-                               !ext.Equals(".docx", StringComparison.OrdinalIgnoreCase);
-                    })
-                    .ToArray();
+                        currentIndex++;
 
-                var docFiles = dirFiles
-                    .Where(f => Path.GetExtension(f).Equals(".doc", StringComparison.OrdinalIgnoreCase))
-                    .ToArray();
+                        if (!ShouldProcessByModifiedTime(sourceRoot, targetRoot, sourceFile))
+                        {
+                            continue;
+                        }
 
-                var docxFiles = dirFiles
-                    .Where(f => Path.GetExtension(f).Equals(".docx", StringComparison.OrdinalIgnoreCase))
-                    .ToArray();
+                        var ext = Path.GetExtension(sourceFile);
+                        var isWordFile = ext.Equals(".doc", StringComparison.OrdinalIgnoreCase) ||
+                                         ext.Equals(".docx", StringComparison.OrdinalIgnoreCase);
 
-                // 階段 1：先處理非 Word 檔
-                foreach (var sourceFile in nonWordFiles)
-                {
-                    currentIndex++;
-                    ProcessSingleFile(sourceRoot, targetRoot, sourceFile, false, progress, totalCount, currentIndex, wordApp);
+                        ProcessSingleFile(sourceRoot, targetRoot, sourceFile, isWordFile, progress, totalCount, currentIndex, wordApp);
+                    }
                 }
-
-                // 階段 2：再處理 .doc
-                foreach (var sourceFile in docFiles)
+                else
                 {
-                    currentIndex++;
-                    ProcessSingleFile(sourceRoot, targetRoot, sourceFile, true, progress, totalCount, currentIndex, wordApp);
-                }
+                    // 路線一：維持原有流程（並存、每次詢問、覆蓋-無條件覆蓋）
+                    var nonWordFiles = dirFiles
+                        .Where(f =>
+                        {
+                            var ext = Path.GetExtension(f);
+                            return !ext.Equals(".doc", StringComparison.OrdinalIgnoreCase) &&
+                                   !ext.Equals(".docx", StringComparison.OrdinalIgnoreCase);
+                        })
+                        .ToArray();
 
-                // 階段 3：最後處理 .docx
-                foreach (var sourceFile in docxFiles)
-                {
-                    currentIndex++;
-                    ProcessSingleFile(sourceRoot, targetRoot, sourceFile, true, progress, totalCount, currentIndex, wordApp);
+                    var docFiles = dirFiles
+                        .Where(f => Path.GetExtension(f).Equals(".doc", StringComparison.OrdinalIgnoreCase))
+                        .ToArray();
+
+                    var docxFiles = dirFiles
+                        .Where(f => Path.GetExtension(f).Equals(".docx", StringComparison.OrdinalIgnoreCase))
+                        .ToArray();
+
+                    // 階段 1：先處理非 Word 檔
+                    foreach (var sourceFile in nonWordFiles)
+                    {
+                        currentIndex++;
+                        ProcessSingleFile(sourceRoot, targetRoot, sourceFile, false, progress, totalCount, currentIndex, wordApp);
+                    }
+
+                    // 階段 2：再處理 .doc
+                    foreach (var sourceFile in docFiles)
+                    {
+                        currentIndex++;
+                        ProcessSingleFile(sourceRoot, targetRoot, sourceFile, true, progress, totalCount, currentIndex, wordApp);
+                    }
+
+                    // 階段 3：最後處理 .docx
+                    foreach (var sourceFile in docxFiles)
+                    {
+                        currentIndex++;
+                        ProcessSingleFile(sourceRoot, targetRoot, sourceFile, true, progress, totalCount, currentIndex, wordApp);
+                    }
                 }
             }
         }
@@ -377,6 +401,95 @@ public sealed class FileProcessor
         }
 
         return dialogData.Action;
+    }
+
+    /// <summary>
+    /// 路線二：來源端同主檔名群組（.pdf/.doc/.docx）只保留最新代表檔。
+    /// 其他副檔名維持原樣各自處理。
+    /// </summary>
+    private static string[] GetLatestRepresentativeFiles(string[] dirFiles)
+    {
+        var grouped = dirFiles.GroupBy(f => Path.GetFileNameWithoutExtension(f), StringComparer.OrdinalIgnoreCase);
+        var result = new List<string>();
+
+        foreach (var group in grouped)
+        {
+            var candidates = group
+                .Where(f =>
+                {
+                    var ext = Path.GetExtension(f);
+                    return ext.Equals(".pdf", StringComparison.OrdinalIgnoreCase) ||
+                           ext.Equals(".doc", StringComparison.OrdinalIgnoreCase) ||
+                           ext.Equals(".docx", StringComparison.OrdinalIgnoreCase);
+                })
+                .ToArray();
+
+            if (candidates.Length == 0)
+            {
+                result.AddRange(group);
+                continue;
+            }
+
+            var latest = candidates
+                .OrderByDescending(File.GetLastWriteTime)
+                .First();
+
+            result.Add(latest);
+
+            // 同主檔名但非 .pdf/.doc/.docx 的檔案照舊處理
+            result.AddRange(group.Except(candidates));
+        }
+
+        return result.ToArray();
+    }
+
+    /// <summary>
+    /// 路線二：與目的端同名 PDF 進行秒級時間比對，決定是否處理。
+    /// </summary>
+    private bool ShouldProcessByModifiedTime(string sourceRoot, string targetRoot, string sourceFile)
+    {
+        var relativePath = Path.GetRelativePath(sourceRoot, sourceFile);
+        var targetFile = Path.Combine(targetRoot, relativePath);
+        var targetDir = Path.GetDirectoryName(targetFile) ?? targetRoot;
+        var targetPdfPath = Path.Combine(targetDir, Path.GetFileNameWithoutExtension(sourceFile) + ".pdf");
+
+        if (!File.Exists(targetPdfPath))
+        {
+            return true;
+        }
+
+        var sourceTime = TruncateToSecond(File.GetLastWriteTime(sourceFile));
+        var targetTime = TruncateToSecond(File.GetLastWriteTime(targetPdfPath));
+
+        if (sourceTime > targetTime)
+        {
+            return true;
+        }
+
+        if (sourceTime < targetTime)
+        {
+            return false;
+        }
+
+        var ask = MessageBox.Show(
+            "來源檔與目的檔的修改時間相同，是否強制覆蓋？",
+            "修改時間相同",
+            MessageBoxButtons.YesNo,
+            MessageBoxIcon.Question);
+
+        return ask == DialogResult.Yes;
+    }
+
+    private static DateTime TruncateToSecond(DateTime value)
+    {
+        return new DateTime(
+            value.Year,
+            value.Month,
+            value.Day,
+            value.Hour,
+            value.Minute,
+            value.Second,
+            value.Kind);
     }
 
     /// <summary>
