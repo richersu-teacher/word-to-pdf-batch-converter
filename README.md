@@ -19,10 +19,9 @@
 因此相較於使用其他第三方轉檔工具，較能維持原本 Word 文件中的表格、圖片、頁面配置與格式。
 
 ---
-## 📥 下載工具
+## 📥 下載工具 2026/05/20 更新 v1.1.0
 
-👉 👉 👉 **一般使用者（建議下載）**   2026/05/20 更新 v1.1.0
-
+👉 👉 👉 **一般使用者（建議下載）**  
 
 https://github.com/richersu-teacher/word-to-pdf-batch-converter/releases/download/v1.1.0/word2pdf-full.zip 
 
