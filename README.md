@@ -21,14 +21,14 @@
 ---
 ## 📥 下載工具
 
-👉 👉 👉 **一般使用者（建議下載）**  
-https://github.com/richersu-teacher/word-to-pdf-batch-converter/releases/download/v1.0.0/word2pdf-full.zip  
+👉 👉 👉 **一般使用者（建議下載）**   2026/05/20 更新 v1.1.0
+https://github.com/richersu-teacher/word-to-pdf-batch-converter/releases/download/v1.1.0/word2pdf-full.zip 
 
 👉 已安裝 .NET（較小版本）  
-https://github.com/richersu-teacher/word-to-pdf-batch-converter/releases/download/v1.0.0/word2pdf-lite.zip  
+https://github.com/richersu-teacher/word-to-pdf-batch-converter/releases/download/v1.1.0/word2pdf-lite.zip  
 
 👉 進階使用者（單一執行檔）  
-https://github.com/richersu-teacher/word-to-pdf-batch-converter/releases/download/v1.0.0/word2pdf-single.zip  
+https://github.com/richersu-teacher/word-to-pdf-batch-converter/releases/download/v1.1.0/word2pdf-single.zip 
 
 ⚠️ 一般使用者請優先下載「word2pdf-full.zip」
 
